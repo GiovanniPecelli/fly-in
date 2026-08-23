@@ -4,7 +4,7 @@ install:
 	uv sync
 
 run:
-	uv run python -m src.fly_in
+	uv run python -m src.fly_in $(MAP)
 
 debug:
 	uv run python -m pdb -m src.fly_in

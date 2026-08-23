@@ -1,4 +1,4 @@
-from zone import Zone, ZoneType, Connection
+from .zone import Zone, ZoneType, Connection
 
 
 def extract_zone(clean_line: str) -> Zone:
