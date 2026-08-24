@@ -13,7 +13,7 @@ def start_visualization(zone_dict: dict[str, Zone]) -> None:
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     width = screen.get_width()
     height = screen.get_height()
-    scale = 100
+    scale = 120
     min_x = min(zone.x for zone in zone_dict.values())
     min_y = min(zone.y for zone in zone_dict.values())
     max_x = max(zone.x for zone in zone_dict.values())
@@ -63,7 +63,7 @@ def start_visualization(zone_dict: dict[str, Zone]) -> None:
                     screen,
                     (255, 255, 255),
                     (link_center_x, link_center_y),
-                    12
+                    scale / 10
                 )
                 capacity_text = str(connection.max_link_capacity)
                 capacity_label = font_small.render(
@@ -91,7 +91,7 @@ def start_visualization(zone_dict: dict[str, Zone]) -> None:
                 screen,
                 circle_color,
                 (center_x, center_y),
-                20
+                scale / 4
             )
 
             # INFO label
