@@ -8,11 +8,28 @@ class ZoneType(Enum):
     turns. Blocked is "-1" just to rapresent an impossible action
     """
     NORMAL = 1
-    PRIORITY = 1
-    RESTRICTED = 2
-    BLOCKED = -1
-    START = 0
-    END = 0
+    PRIORITY = 2
+    RESTRICTED = 3
+    BLOCKED = 4
+    START = 5
+    END = 6
+
+
+class ColorRGB(Enum):
+    """
+    Enum representing RGB values for colors defined as strings in map files.
+    """
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+    YELLOW = (255, 255, 0)
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    CYAN = (0, 255, 255)
+    MAGENTA = (255, 0, 255)
+    ORANGE = (255, 165, 0)
+    GRAY = (128, 128, 128)
+    PURPLE = (128, 0, 128)
 
 
 @dataclass
