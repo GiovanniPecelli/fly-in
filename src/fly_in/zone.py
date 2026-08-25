@@ -21,7 +21,7 @@ class ColorRGB(Enum):
     """
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
-    BLUE = (0, 0, 255)
+    BLUE = (0, 191, 255)
     YELLOW = (255, 255, 0)
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
@@ -66,5 +66,5 @@ class Zone:
     y: int
     zone_type: ZoneType = field(default=ZoneType.NORMAL)
     color: str | None = None
-    max_drones: int = field(default=1)
+    max_drones: int | float = field(default=1)
     connections: list[Connection] = field(default_factory=list)

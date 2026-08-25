@@ -1,8 +1,12 @@
 from .zone import Zone, ColorRGB
+from .drone import Drone
 import pygame
 
 
-def start_visualization(zone_dict: dict[str, Zone]) -> None:
+def graphic_visualization(
+        zone_dict: dict[str, Zone],
+        drones_lst: list[Drone]
+) -> None:
     """
     Circle take: target surface, color, position, radius in px
     """
@@ -30,13 +34,22 @@ def start_visualization(zone_dict: dict[str, Zone]) -> None:
     font_large = pygame.font.SysFont(None, 28)
     font_small = pygame.font.SysFont(None, 20)
 
+    # Drone visualization
+    drone_image = pygame.image.load("drone_icon.png")
+    drone_icon = pygame.transform.scale(drone_image, (40, 40))
+
+    current_turn = 0
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_RIGHT:
+                    current_turn += 1
+                elif event.key == pygame.K_LEFT:
+                    current_turn -= 1
+                elif event.key == pygame.K_ESCAPE:
                     running = False
         screen.fill((50, 150, 200))
 
@@ -91,7 +104,7 @@ def start_visualization(zone_dict: dict[str, Zone]) -> None:
                 screen,
                 circle_color,
                 (center_x, center_y),
-                scale / 4
+                scale / 3
             )
 
             # INFO label
@@ -103,8 +116,25 @@ def start_visualization(zone_dict: dict[str, Zone]) -> None:
                 (0, 0, 0)
             )
             drone_label = font_small.render(drone_text, True, (60, 60, 60))
-            screen.blit(zone_type_label, (center_x - 8, center_y - 15))
-            screen.blit(drone_label, (center_x - 5, center_y + 3))
+            screen.blit(zone_type_label, (center_x - 30, center_y - 15))
+            screen.blit(drone_label, (center_x - 27, center_y + 3))
+
+        drone_counts = {}
+        for drone in drones_lst:
+            if drone.current_zone in drone_counts:
+                drone_counts[drone.current_zone] += 1
+            else:
+                drone_counts[drone.current_zone] = 1
+
+        for zone_name, count in drone_counts.items():
+            current_position = zone_dict[zone_name]
+            x = (current_position.x * scale) + offset_x
+            y = (current_position.y * scale) + offset_y
+            screen.blit(drone_icon, (x - 5, y - 20))
+            if count > 1:
+                count_text = font_small.render(str(count), True, (0, 0, 0))
+                screen.blit(count_text, (x + 8, y - 6))
+
         # Instantly swaps the hidden "back canvas" with the visible window.
         # We draw everything in the background first, then show it all at
         # once.

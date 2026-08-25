@@ -46,6 +46,9 @@ def extract_zone(clean_line: str) -> Zone:
     if "max_drones" in metadata_dict:
         new_zone.max_drones = int(metadata_dict["max_drones"])
 
+    if new_zone.zone_type in (ZoneType.START, ZoneType.END):
+        new_zone.max_drones = float('inf')
+
     return new_zone
 
 
