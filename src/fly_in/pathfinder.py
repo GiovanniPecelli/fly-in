@@ -69,16 +69,22 @@ def plan_cooperative_path(
                 turn_cost = 1
             next_turn = current_turn + turn_cost
 
-            # check traffic
             if next_zone.zone_type == ZoneType.BLOCKED:
                 continue
 
+            # CHECK TRAFFIC: read the reservation_table in the next_turn
             # We use chained .get() to safely read without raising a KeyError.
             # use of "reservation_table["roof3"]"
             # raise an err. if the parameters are not available
             # .get(..., "default_value") if ... not found -> def.val
-            traffic = reservation_table.get(next_name, {}).get(next_turn, 0)
-            if traffic >= next_zone.max_drones:
+            traffic_clear = True
+            for t in range(current_turn + 1, next_turn + 1):
+                # read the reservation_table for the specific turn "t"
+                traffic = reservation_table.get(next_name, {}).get(t, 0)
+                if traffic >= next_zone.max_drones:
+                    traffic_clear = False
+                    break
+            if not traffic_clear:
                 continue
 
             if next_zone.zone_type == ZoneType.PRIORITY:
@@ -98,8 +104,18 @@ def plan_cooperative_path(
                 heapq.heappush(queue, (
                     next_turn, next_penality, movement, next_name
                 ))
-                came_from[(next_name, next_turn)] = (
-                    current_name, current_turn)
+
+                # TODO need study to fully understand it
+                if turn_cost == 2:
+                    intermediate_turn = current_turn + 1
+                    came_from[(next_name, next_turn)] = (
+                        next_name, intermediate_turn)
+                    if (next_name, intermediate_turn) not in came_from:
+                        came_from[(next_name, intermediate_turn)] = (
+                            current_name, current_turn)
+                else:
+                    came_from[(next_name, next_turn)] = (
+                        current_name, current_turn)
 
     if current_name != end_name:
         return []

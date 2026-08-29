@@ -35,9 +35,14 @@ def init_drones(zone_dict: dict[str, Zone], nb_drones: int) -> list[Drone]:
 
     color_lst = [color.value for color in ColorRGB]
 
+    if len(color_lst) >= nb_drones:
+        # random.sample(list, k: "Nbr of unique items you want to pick")
+        selected_color = random.sample(color_lst, nb_drones)
+    else:
+        selected_color = random.choice(color_lst, k=nb_drones)
     drones_lst = []
     for drone_id in range(1, nb_drones + 1):
-        color_extracted = random.choice(color_lst)
+        color_extracted = selected_color[drone_id - 1]
         new_drone = Drone(
             id=drone_id,
             current_zone=start_zone_name,
