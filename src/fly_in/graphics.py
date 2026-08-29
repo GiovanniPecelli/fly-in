@@ -121,10 +121,16 @@ def graphic_visualization(
 
         drone_counts = {}
         for drone in drones_lst:
-            if drone.current_zone in drone_counts:
-                drone_counts[drone.current_zone] += 1
+            drone_location = drone.current_zone
+            for zone_name, turn in drone.path:
+                if turn <= current_turn:
+                    drone_location = zone_name
+                else:
+                    break
+            if drone_location in drone_counts:
+                drone_counts[drone_location] += 1
             else:
-                drone_counts[drone.current_zone] = 1
+                drone_counts[drone_location] = 1
 
         for zone_name, count in drone_counts.items():
             current_position = zone_dict[zone_name]

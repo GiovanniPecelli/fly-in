@@ -1,26 +1,143 @@
 from .zone import Zone, ZoneType, Connection
+from .drone import Drone
+import heapq
 
 
-def get_shortest_path(
+def plan_cooperative_path(
         zone_dict: dict[str, Zone],
         start_name: str,
         end_name: str,
-) -> list[str]:
+        reservation_table: dict
+) -> list[tuple[str, int]]:
+    """
+    Finds the shortest collision-free path for a drone using Cooperative A* 
+    (Space-Time Pathfinding).
+
+    Unlike a standard pathfinding algorithm that only searches through spatial 
+    nodes (X, Y), this algorithm explores a Time-Expanded Graph where each state 
+    is a combination of (Zone, Turn). 
+
+    Algorithm Behavior:
+    1. It evaluates moving to adjacent zones or waiting in the current zone.
+    2. It calculates the temporal cost of the move (e.g., restricted zones take 2 turns).
+    3. It cross-references future states with a global `reservation_table`. If a 
+       destination zone has reached its `max_drones` capacity at that specific 
+       future turn, the move is discarded (traffic avoidance).
+    4. Upon reaching the target zone, it backtracks through the `came_from` 
+       dictionary to reconstruct the optimal time-aware path.
+
+    Args:
+        zone_dict (dict[str, Zone]): A dictionary of all available zones in the map.
+        start_name (str): The name of the starting zone.
+        end_name (str): The name of the target zone.
+        reservation_table (dict): A shared registry tracking drone occupancy per 
+                                  zone per turn (format: {zone_name: {turn: count}}).
+
+    Returns:
+        list[tuple[str, int]]: The calculated path as a chronological sequence of 
+                               (Zone Name, Turn) states, or an empty list if no 
+                               valid path is found.
+    """
+
     start_zone = zone_dict[start_name]
     end_zone = zone_dict[end_name]
-    queue = [start_name]
-    came_from = {start_name: None}
+
+    # initialization queue(turn, current_penality, zone_name)
+    queue = [(0, 0, start_name)]
+    came_from = {(start_name, 0): None}
     
     while len(queue) > 0:
-        current_name = queue.pop(0)
+        current_turn, current_penality, current_name = heapq.heappop(queue)
         if current_name == end_name:
             break
         current_zone = zone_dict[current_name]
+
+        possible_destinations = [current_name]
         for connection in current_zone.connections:
-            neighbor_name = connection.target
-            neighbor_zone = zone_dict[neighbor_name]
-            if (neighbor_zone.zone_type != ZoneType.BLOCKED 
-                and neighbor_name not in came_from
+            possible_destinations.append(connection.target)
+
+        for next_name in possible_destinations:
+            next_zone = zone_dict[next_name]
+            if (next_name != current_name
+                and next_zone.zone_type == ZoneType.RESTRICTED
             ):
-                queue.append(neighbor_name)
-                came_from[neighbor_name] = current_name
+                turn_cost = 2
+            else:
+                turn_cost = 1
+            next_turn = current_turn + turn_cost
+
+            # check traffic
+            if next_zone.zone_type == ZoneType.BLOCKED:
+                continue
+
+            # We use chained .get() to safely read without raising a KeyError.
+            # use of "reservation_table["roof3"]"
+            # raise an err. if the parameters are not available
+            # .get(..., "default_value") if ... not found -> def.val
+            traffic = reservation_table.get(next_name, {}).get(next_turn, 0)
+            if traffic >= next_zone.max_drones:
+                continue
+
+            # es: how data are in "came_from" variable
+            #{
+            #    ("start", 0): None,
+            #    ("corridorA", 1): ("start", 0)
+            #    ("corridorA", 2): ("corridorA", 1)
+            #}
+            # the real next option after the traffic and zone_type check
+            if next_zone.zone_type == ZoneType.PRIORITY:
+                next_penality = current_penality + 0
+            else:
+                next_penality = current_penality + 1
+            if (next_name, next_turn) not in came_from:
+                # heappop() extract the element on the top of the tree
+                heapq.heappush(queue, (next_turn, next_penality, next_name))
+                came_from[(next_name, next_turn)] = (
+                    current_name, current_turn)
+
+    if current_name != end_name:
+        return []
+
+    # state is the focus point (starting from the end)
+    state = (current_name, current_turn)
+
+    # add -> add state to the path list
+    # ask -> the matched value in come_from 
+    # (come_from struct from line 45 to 50)
+    path = []
+    while state is not None:
+        path.append(state)
+        state = came_from[state]
+    path.reverse()
+
+    return path
+
+
+def Cooperative_A_star(
+        zone_dict: dict[str, Zone],
+        drones_lst: list[Drone]
+) -> None:
+    for zone in zone_dict.values():
+        if zone.zone_type == ZoneType.END:
+            end_zone_name = zone.name
+            break
+    reservation_table = {}
+
+    for drone in drones_lst:
+        path = plan_cooperative_path(
+            zone_dict,
+            drone.current_zone,
+            end_zone_name,
+            reservation_table
+        )
+        # path: (is a list[tuple[
+        # ("start", turn), ("corridorA", turn), ("goal", turn)
+        # ]])
+
+        drone.path = path
+        for zone_name, turn in path:
+            if zone_name not in reservation_table:
+                reservation_table[zone_name] = {}
+            if turn not in reservation_table[zone_name]:
+                reservation_table[zone_name][turn] = 0
+            reservation_table[zone_name][turn] += 1
