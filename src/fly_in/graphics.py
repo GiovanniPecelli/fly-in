@@ -119,36 +119,28 @@ def graphic_visualization(
             screen.blit(zone_type_label, (center_x - 30, center_y - 15))
             screen.blit(drone_label, (center_x - 27, center_y + 3))
 
-        # Take drones by zone
-        zone_to_drones = {}
+        # Swarm Effect (Scatter)
         for drone in drones_lst:
+            # 1. Find the current zone
             drone_location = drone.current_zone
             for zone_name, turn in drone.path:
                 if turn <= current_turn:
                     drone_location = zone_name
                 else:
                     break
-            if drone_location not in zone_to_drones:
-                zone_to_drones[drone_location] = []
-            zone_to_drones[drone_location].append(drone)
-
-        for zone_name, drones_in_zone in zone_to_drones.items():
-            count = len(drones_in_zone)
-            current_position = zone_dict[zone_name]
-            x = (current_position.x * scale) + offset_x
-            y = (current_position.y * scale) + offset_y
+                    
+            # 2. Calculate a deterministic micro-offset based on drone ID
+            offset_x_drone = (drone.id * 7) % 25 - 12
+            offset_y_drone = (drone.id * 5) % 25 - 12
             
+            current_position = zone_dict[drone_location]
+            x = (current_position.x * scale) + offset_x + offset_x_drone
+            y = (current_position.y * scale) + offset_y + offset_y_drone
+            
+            # 3. Tint and draw the drone icon
             colored_icon = drone_icon.copy()
-
-            if count == 1:
-                color_to_apply = drones_in_zone[0].drone_color
-            else:
-                color_to_apply = drones_in_zone[-1].drone_color
-            colored_icon.fill(color_to_apply, special_flags=pygame.BLEND_MULT)
-            screen.blit(colored_icon, (x - 5, y - 20))
-            if count > 1:
-                count_text = font_small.render(str(count), True, (0, 0, 0))
-                screen.blit(count_text, (x + 8, y - 6))
+            colored_icon.fill(drone.drone_color, special_flags=pygame.BLEND_MULT)
+            screen.blit(colored_icon, (x - 15, y - 25))
 
         # Instantly swaps the hidden "back canvas" with the visible window.
         # We draw everything in the background first, then show it all at
