@@ -119,7 +119,8 @@ def graphic_visualization(
             screen.blit(zone_type_label, (center_x - 30, center_y - 15))
             screen.blit(drone_label, (center_x - 27, center_y + 3))
 
-        drone_counts = {}
+        # Take drones by zone
+        zone_to_drones = {}
         for drone in drones_lst:
             drone_location = drone.current_zone
             for zone_name, turn in drone.path:
@@ -127,16 +128,24 @@ def graphic_visualization(
                     drone_location = zone_name
                 else:
                     break
-            if drone_location in drone_counts:
-                drone_counts[drone_location] += 1
-            else:
-                drone_counts[drone_location] = 1
+            if drone_location not in zone_to_drones:
+                zone_to_drones[drone_location] = []
+            zone_to_drones[drone_location].append(drone)
 
-        for zone_name, count in drone_counts.items():
+        for zone_name, drones_in_zone in zone_to_drones.items():
+            count = len(drones_in_zone)
             current_position = zone_dict[zone_name]
             x = (current_position.x * scale) + offset_x
             y = (current_position.y * scale) + offset_y
-            screen.blit(drone_icon, (x - 5, y - 20))
+            
+            colored_icon = drone_icon.copy()
+
+            if count == 1:
+                color_to_apply = drones_in_zone[0].drone_color
+            else:
+                color_to_apply = drones_in_zone[-1].drone_color
+            colored_icon.fill(color_to_apply, special_flags=pygame.BLEND_MULT)
+            screen.blit(colored_icon, (x - 5, y - 20))
             if count > 1:
                 count_text = font_small.render(str(count), True, (0, 0, 0))
                 screen.blit(count_text, (x + 8, y - 6))

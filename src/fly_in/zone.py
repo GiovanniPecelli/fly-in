@@ -30,6 +30,26 @@ class ColorRGB(Enum):
     ORANGE = (255, 165, 0)
     GRAY = (128, 128, 128)
     PURPLE = (128, 0, 128)
+    # --- New color for the Drones ---
+    LIME = (50, 205, 50)
+    PINK = (255, 105, 180)
+    TEAL = (0, 128, 128)
+    GOLD = (255, 215, 0)
+    BROWN = (165, 42, 42)
+    NAVY = (0, 0, 128)
+    MAROON = (128, 0, 0)
+    OLIVE = (128, 128, 0)
+    CORAL = (255, 127, 80)
+    SALMON = (250, 128, 114)
+    KHAKI = (240, 230, 140)
+    PLUM = (221, 160, 221)
+    INDIGO = (75, 0, 130)
+    CRIMSON = (220, 20, 60)
+    CHOCOLATE = (210, 105, 30)
+    TOMATO = (255, 99, 71)
+    TURQUOISE = (64, 224, 208)
+    VIOLET = (238, 130, 238)
+    # --------------------------------
 
 
 @dataclass

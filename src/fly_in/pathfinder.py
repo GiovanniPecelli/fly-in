@@ -42,12 +42,15 @@ def plan_cooperative_path(
     start_zone = zone_dict[start_name]
     end_zone = zone_dict[end_name]
 
-    # initialization queue(turn, current_penality, zone_name)
-    queue = [(0, 0, start_name)]
+    # initialization queue(turn, current_penality, movement, zone_name)
+    queue = [(0, 0, 0, start_name)]
     came_from = {(start_name, 0): None}
     
     while len(queue) > 0:
-        current_turn, current_penality, current_name = heapq.heappop(queue)
+        (current_turn,
+        current_penality,
+        movement,
+        current_name) = heapq.heappop(queue)
         if current_name == end_name:
             break
         current_zone = zone_dict[current_name]
@@ -78,6 +81,11 @@ def plan_cooperative_path(
             if traffic >= next_zone.max_drones:
                 continue
 
+            if next_zone.zone_type == ZoneType.PRIORITY:
+                next_penality = current_penality + 0
+            else:
+                next_penality = current_penality + 1
+            movement = 0 if next_name == current_name else 1
             # es: how data are in "came_from" variable
             #{
             #    ("start", 0): None,
@@ -85,13 +93,11 @@ def plan_cooperative_path(
             #    ("corridorA", 2): ("corridorA", 1)
             #}
             # the real next option after the traffic and zone_type check
-            if next_zone.zone_type == ZoneType.PRIORITY:
-                next_penality = current_penality + 0
-            else:
-                next_penality = current_penality + 1
             if (next_name, next_turn) not in came_from:
                 # heappop() extract the element on the top of the tree
-                heapq.heappush(queue, (next_turn, next_penality, next_name))
+                heapq.heappush(queue, (
+                    next_turn, next_penality, movement, next_name
+                ))
                 came_from[(next_name, next_turn)] = (
                     current_name, current_turn)
 
