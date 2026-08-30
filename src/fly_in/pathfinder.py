@@ -1,4 +1,4 @@
-from .zone import Zone, ZoneType, Connection
+from .zone import Zone, ZoneType
 from .drone import Drone
 import heapq
 
@@ -135,7 +135,7 @@ def plan_cooperative_path(
     return path
 
 
-def Cooperative_A_star(
+def cooperative_a_star(
         zone_dict: dict[str, Zone],
         drones_lst: list[Drone]
 ) -> None:

@@ -1,4 +1,5 @@
-from .zone import Zone, ColorRGB
+from .zone import Zone, ZoneType, ColorRGB
+from .print_move import get_max_turn
 from .drone import Drone
 import pygame
 
@@ -17,7 +18,7 @@ def graphic_visualization(
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     width = screen.get_width()
     height = screen.get_height()
-    scale = 120
+    scale = 90
     min_x = min(zone.x for zone in zone_dict.values())
     min_y = min(zone.y for zone in zone_dict.values())
     max_x = max(zone.x for zone in zone_dict.values())
@@ -46,9 +47,11 @@ def graphic_visualization(
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
-                    current_turn += 1
+                    max_turn = get_max_turn(drones_lst)
+                    current_turn = min(max_turn - 1, current_turn + 1)
                 elif event.key == pygame.K_LEFT:
-                    current_turn -= 1
+                    # IF "turn" value become negative -> MAX put 0 as limit
+                    current_turn = max(0, current_turn - 1)
                 elif event.key == pygame.K_ESCAPE:
                     running = False
         screen.fill((50, 150, 200))
@@ -121,21 +124,37 @@ def graphic_visualization(
 
         # Swarm Effect (Scatter)
         for drone in drones_lst:
-            # 1. Find the current zone
-            drone_location = drone.current_zone
-            for zone_name, turn in drone.path:
-                if turn <= current_turn:
-                    drone_location = zone_name
-                else:
-                    break
+            # 1. Find the current zone and check if in flight
+            in_flight = False
+            prev_location = drone.path[0][0]
+            
+            if current_turn < len(drone.path):
+                drone_location = drone.path[current_turn][0]
+                if current_turn > 0:
+                    prev_location = drone.path[current_turn - 1][0]
+            else:
+                drone_location = drone.path[-1][0]
+                prev_location = drone_location
+
+            if drone_location != prev_location and zone_dict[drone_location].zone_type == ZoneType.RESTRICTED:
+                in_flight = True
                     
             # 2. Calculate a deterministic micro-offset based on drone ID
             offset_x_drone = (drone.id * 7) % 25 - 12
             offset_y_drone = (drone.id * 5) % 25 - 12
             
+            # 3. Calculate actual screen coordinates
             current_position = zone_dict[drone_location]
-            x = (current_position.x * scale) + offset_x + offset_x_drone
-            y = (current_position.y * scale) + offset_y + offset_y_drone
+            if in_flight:
+                prev_position = zone_dict[prev_location]
+                base_x = ((current_position.x + prev_position.x) / 2 * scale) + offset_x
+                base_y = ((current_position.y + prev_position.y) / 2 * scale) + offset_y
+            else:
+                base_x = (current_position.x * scale) + offset_x
+                base_y = (current_position.y * scale) + offset_y
+                
+            x = base_x + offset_x_drone
+            y = base_y + offset_y_drone
             
             # 3. Tint and draw the drone icon
             colored_icon = drone_icon.copy()
