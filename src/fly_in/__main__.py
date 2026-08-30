@@ -1,7 +1,7 @@
-from .graphics import graphic_visualization
 from .pathfinder import plan_cooperative_path, cooperative_a_star
+from .print_move import print_move, get_max_turn
+from .graphics import graphic_visualization
 from .parser import parse_map_file
-from .print_move import print_move
 from .drone import init_drones
 from .zone import ZoneType
 import time
@@ -21,8 +21,10 @@ def main(filepath: str) -> None:
     zone_dict, nb_drones = parse_map_file(filepath)
     drones_lst = init_drones(zone_dict, nb_drones)
     cooperative_a_star(zone_dict, drones_lst)
+    max_turn = get_max_turn(drones_lst) - 1
     print_move(zone_dict, drones_lst)
-    # time.sleep: Permits the visualizzation of the terminal output
+    print(f"\nTotal turn = {max_turn}")
+    # time.sleep: Permits the see the drones movements output
     time.sleep(5)
     graphic_visualization(zone_dict, drones_lst)
 
