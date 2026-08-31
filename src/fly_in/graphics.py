@@ -8,8 +8,27 @@ def graphic_visualization(
         zone_dict: dict[str, Zone],
         drones_lst: list[Drone]
 ) -> None:
-    """
-    Circle take: target surface, color, position, radius in px
+    """Render the map and drone simulation using Pygame.
+
+    Opens a fullscreen window that displays zones, connections, and drones.
+    Allows navigating simulation turns with the right/left arrow keys and
+    exiting with `ESC`.
+
+    Parameters
+    ----------
+    zone_dict : dict[str, Zone]
+        Dictionary of zones indexed by name; each `Zone` must have
+        attributes `x`, `y`, `connections`, `zone_type`, `max_drones` and
+        optionally `color`.
+    drones_lst : list[Drone]
+        List of `Drone` objects that contain the `path` attribute with the
+        sequence of positions per turn and `drone_color`/`id` for rendering.
+
+    Returns
+    -------
+    None
+        This function does not return a value; it handles window events and
+        exits when the user closes the window.
     """
     pygame.init()
     pygame.display.set_caption("Fly-in Visualization")
@@ -37,7 +56,7 @@ def graphic_visualization(
 
     # Drone visualization
     drone_image = pygame.image.load("drone_icon.png")
-    drone_icon = pygame.transform.scale(drone_image, (40, 40))
+    drone_icon = pygame.transform.scale(drone_image, (35, 35))
 
     current_turn = 0
     running = True
