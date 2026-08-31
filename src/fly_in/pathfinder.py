@@ -109,7 +109,9 @@ def plan_cooperative_path(
                 next_penality = current_penality + 0
             else:
                 next_penality = current_penality + 1
+
             movement = 0 if next_name == current_name else 1
+
             # es: how data are in "came_from" variable
             # {
             #    ("start", 0): None,
@@ -197,4 +199,3 @@ def cooperative_a_star(
                 reservation_table.setdefault(link_key, {})[t] = (
                     reservation_table.get(link_key, {}).get(t, 0) + 1
                 )
-    print(reservation_table)
