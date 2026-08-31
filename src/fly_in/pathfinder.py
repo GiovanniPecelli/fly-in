@@ -4,53 +4,56 @@ import heapq
 
 
 def plan_cooperative_path(
-        zone_dict: dict[str, Zone],
-        start_name: str,
-        end_name: str,
-        reservation_table: dict
+    zone_dict: dict[str, Zone],
+    start_name: str,
+    end_name: str,
+    reservation_table: dict[str, dict[int, int]]
 ) -> list[tuple[str, int]]:
     """
-    Finds the shortest collision-free path for a drone using Cooperative A* 
+    Finds the shortest collision-free path for a drone using Cooperative A*
     (Space-Time Pathfinding).
 
-    Unlike a standard pathfinding algorithm that only searches through spatial 
-    nodes (X, Y), this algorithm explores a Time-Expanded Graph where each state 
-    is a combination of (Zone, Turn). 
+    Unlike a standard pathfinding algorithm that only searches through spatial
+    nodes (X, Y), this algorithm explores a Time-Expanded Graph where each
+    state is a combination of (Zone, Turn).
 
     Algorithm Behavior:
-    1. It evaluates moving to adjacent zones or waiting in the current zone.
-    2. It calculates the temporal cost of the move (e.g., restricted zones take 2 turns).
-    3. It cross-references future states with a global `reservation_table`. If a 
-       destination zone has reached its `max_drones` capacity at that specific 
-       future turn, the move is discarded (traffic avoidance).
-    4. Upon reaching the target zone, it backtracks through the `came_from` 
-       dictionary to reconstruct the optimal time-aware path.
+    1.  It evaluates moving to adjacent zones or waiting in the current zone.
+    2.  It calculates the temporal cost of the move
+        (e.g., restricted zones take 2 turns).
+    3.  It cross-references future states with a global `reservation_table`.
+        If a destination zone has reached its `max_drones` capacity at that
+        specific future turn, the move is discarded (traffic avoidance).
+    4.  Upon reaching the target zone, it backtracks through the `came_from`
+        dictionary to reconstruct the optimal time-aware path.
 
     Args:
-        zone_dict (dict[str, Zone]): A dictionary of all available zones in the map.
+        zone_dict (dict[str, Zone]): A dictionary of all available zones
+        in the map.
         start_name (str): The name of the starting zone.
         end_name (str): The name of the target zone.
-        reservation_table (dict): A shared registry tracking drone occupancy per 
-                                  zone per turn (format: {zone_name: {turn: count}}).
+        reservation_table (dict): A shared registry tracking drone occupancy
+        per zone per turn (format: {zone_name: {turn: count}}).
 
     Returns:
-        list[tuple[str, int]]: The calculated path as a chronological sequence of 
-                               (Zone Name, Turn) states, or an empty list if no 
-                               valid path is found.
+        list[tuple[str, int]]: The calculated path as a chronological
+        sequence of (Zone Name, Turn) states, or an empty list if no
+        valid path is found.
     """
 
-    start_zone = zone_dict[start_name]
-    end_zone = zone_dict[end_name]
-
     # initialization queue(turn, current_penality, movement, zone_name)
-    queue = [(0, 0, 0, start_name)]
-    came_from = {(start_name, 0): None}
-    
+    queue: list[tuple[int, int, int, str]] = [(0, 0, 0, start_name)]
+    came_from: dict[
+        tuple[str, int], tuple[str, int] | None
+        ] = {(start_name, 0): None}
+
     while len(queue) > 0:
-        (current_turn,
-        current_penality,
-        movement,
-        current_name) = heapq.heappop(queue)
+        (
+            current_turn,
+            current_penality,
+            movement,
+            current_name
+        ) = heapq.heappop(queue)
         if current_name == end_name:
             break
         current_zone = zone_dict[current_name]
@@ -61,7 +64,8 @@ def plan_cooperative_path(
 
         for next_name in possible_destinations:
             next_zone = zone_dict[next_name]
-            if (next_name != current_name
+            if (
+                next_name != current_name
                 and next_zone.zone_type == ZoneType.RESTRICTED
             ):
                 turn_cost = 2
@@ -93,11 +97,11 @@ def plan_cooperative_path(
                 next_penality = current_penality + 1
             movement = 0 if next_name == current_name else 1
             # es: how data are in "came_from" variable
-            #{
+            # {
             #    ("start", 0): None,
             #    ("corridorA", 1): ("start", 0)
             #    ("corridorA", 2): ("corridorA", 1)
-            #}
+            # }
             # the real next option after the traffic and zone_type check
             if (next_name, next_turn) not in came_from:
                 # heappop() extract the element on the top of the tree
@@ -121,10 +125,10 @@ def plan_cooperative_path(
         return []
 
     # state is the focus point (starting from the end)
-    state = (current_name, current_turn)
+    state: tuple[str, int] | None = (current_name, current_turn)
 
     # add -> add state to the path list
-    # ask -> the matched value in come_from 
+    # ask -> the matched value in come_from
     # (come_from struct from line 45 to 50)
     path = []
     while state is not None:
@@ -143,7 +147,7 @@ def cooperative_a_star(
         if zone.zone_type == ZoneType.END:
             end_zone_name = zone.name
             break
-    reservation_table = {}
+    reservation_table: dict[str, dict[int, int]] = {}
 
     for drone in drones_lst:
         path = plan_cooperative_path(

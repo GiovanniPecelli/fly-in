@@ -1,7 +1,7 @@
 """
 Fly-in Map Visualization Package.
 
-This package provides tools for parsing, modeling, and visualizing 
+This package provides tools for parsing, modeling, and visualizing
 drone navigation maps.
 """
 

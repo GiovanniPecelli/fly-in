@@ -1,4 +1,4 @@
-from dataclasses import dataclass ,field
+from dataclasses import dataclass, field
 from .zone import Zone, ZoneType, ColorRGB
 import random
 
@@ -7,22 +7,25 @@ import random
 class Drone:
     """
     Represents a single drone in the simulation.
-    
+
     Attributes:
         id (int): The unique identifier of the drone.
-        current_zone (str): The name of the zone where the drone is currently located.
+        current_zone (str): The name of the zone where the drone is
+        currently located.
     """
     id: int
     current_zone: str
-    path: list = field(default_factory=list)
-    drone_color: tuple = (255, 255, 255)
+    path: list[tuple[str, int]] = field(default_factory=list)
+    drone_color: tuple[int, int, int] = (255, 255, 255)
+
 
 def init_drones(zone_dict: dict[str, Zone], nb_drones: int) -> list[Drone]:
     """
     Initializes a list of drones and places them in the starting zone.
 
     Args:
-        zone_dict (dict[str, Zone]): Dictionary of parsed zones to find the start hub.
+        zone_dict (dict[str, Zone]): Dictionary of parsed zones to find
+        the start hub.
         nb_drones (int): Total number of drones to initialize.
 
     Returns:
@@ -33,13 +36,14 @@ def init_drones(zone_dict: dict[str, Zone], nb_drones: int) -> list[Drone]:
             start_zone_name = zone.name
             break
 
-    color_lst = [color.value for color in ColorRGB]
+    color_lst: list[tuple[int, int, int]] = [color.value for color in ColorRGB]
 
     if len(color_lst) >= nb_drones:
-        # random.sample(list, k: "Nbr of unique items you want to pick")
+        # pick unique colors when enough are available
         selected_color = random.sample(color_lst, nb_drones)
     else:
-        selected_color = random.choice(color_lst, k=nb_drones)
+        # allow repeats if not enough distinct colors
+        selected_color = random.choices(color_lst, k=nb_drones)
     drones_lst = []
     for drone_id in range(1, nb_drones + 1):
         color_extracted = selected_color[drone_id - 1]

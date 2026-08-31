@@ -14,7 +14,7 @@ def graphic_visualization(
     pygame.init()
     pygame.display.set_caption("Fly-in Visualization")
 
-    # Graphic scale and centralization 
+    # Graphic scale and centralization
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     width = screen.get_width()
     height = screen.get_height()
@@ -73,7 +73,7 @@ def graphic_visualization(
                     connection.max_link_capacity
                 )
 
-                link_center_x = (start_x + end_x) / 2 
+                link_center_x = (start_x + end_x) / 2
                 link_center_y = (start_y + end_y) / 2
                 pygame.draw.circle(
                     screen,
@@ -127,7 +127,7 @@ def graphic_visualization(
             # 1. Find the current zone and check if in flight
             in_flight = False
             prev_location = drone.path[0][0]
-            
+
             if current_turn < len(drone.path):
                 drone_location = drone.path[current_turn][0]
                 if current_turn > 0:
@@ -136,29 +136,38 @@ def graphic_visualization(
                 drone_location = drone.path[-1][0]
                 prev_location = drone_location
 
-            if drone_location != prev_location and zone_dict[drone_location].zone_type == ZoneType.RESTRICTED:
+            if (
+                drone_location != prev_location
+                and zone_dict[drone_location].zone_type == ZoneType.RESTRICTED
+            ):
                 in_flight = True
-                    
+
             # 2. Calculate a deterministic micro-offset based on drone ID
             offset_x_drone = (drone.id * 7) % 25 - 12
             offset_y_drone = (drone.id * 5) % 25 - 12
-            
+
             # 3. Calculate actual screen coordinates
             current_position = zone_dict[drone_location]
             if in_flight:
                 prev_position = zone_dict[prev_location]
-                base_x = ((current_position.x + prev_position.x) / 2 * scale) + offset_x
-                base_y = ((current_position.y + prev_position.y) / 2 * scale) + offset_y
+                base_x = (
+                    (current_position.x + prev_position.x) / 2 * scale
+                ) + offset_x
+                base_y = (
+                    (current_position.y + prev_position.y) / 2 * scale
+                ) + offset_y
             else:
                 base_x = (current_position.x * scale) + offset_x
                 base_y = (current_position.y * scale) + offset_y
-                
+
             x = base_x + offset_x_drone
             y = base_y + offset_y_drone
-            
+
             # 3. Tint and draw the drone icon
             colored_icon = drone_icon.copy()
-            colored_icon.fill(drone.drone_color, special_flags=pygame.BLEND_MULT)
+            colored_icon.fill(
+                drone.drone_color, special_flags=pygame.BLEND_MULT
+            )
             screen.blit(colored_icon, (x - 15, y - 25))
 
         # Instantly swaps the hidden "back canvas" with the visible window.

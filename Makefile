@@ -15,9 +15,9 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint:
-	uv run flake8 src.fly_in
-	uv run mypy src.fly_in --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	uv run flake8 src/fly_in
+	uv run mypy src/fly_in --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	uv run flake8 src.fly_in
-	uv run mypy src.fly_in --strict
+	uv run flake8 src/fly_in
+	uv run mypy src/fly_in --strict

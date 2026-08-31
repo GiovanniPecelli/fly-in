@@ -4,10 +4,9 @@ from .zone import Zone, ZoneType, Connection
 def extract_zone(clean_line: str) -> Zone:
     """
     Parses a single line defining a zone and returns a Zone object.
-    
     Args:
-        clean_line (str): The raw line from the map file starting with a zone prefix.
-        
+        clean_line (str): The raw line from the map file starting
+        with a zone prefix.
     Returns:
         Zone: The constructed Zone object with parsed metadata.
     """
@@ -54,11 +53,13 @@ def extract_zone(clean_line: str) -> Zone:
 
 def extract_connection(clean_line: str, zone_dict: dict[str, Zone]) -> None:
     """
-    Parses a connection line and updates the respective Zone objects in the dictionary.
-    
+    Parses a connection line and updates the respective Zone objects
+    in the dictionary.
     Args:
-        clean_line (str): The raw line from the map file starting with 'connection:'.
-        zone_dict (dict[str, Zone]): The dictionary containing all created zones.
+        clean_line (str): The raw line from the map file starting with
+        'connection:'.
+        zone_dict (dict[str, Zone]): The dictionary containing all
+        created zones.
     """
     data = clean_line.split(":", 1)[1].strip()
     metadata_dict = {}
@@ -88,18 +89,16 @@ def extract_connection(clean_line: str, zone_dict: dict[str, Zone]) -> None:
 
     zone_dict[name_A].connections.append(conn_to_B)
     zone_dict[name_B].connections.append(conn_to_A)
- 
+
 
 def parse_map_file(filepath: str) -> tuple[dict[str, Zone], int]:
     """
     Parses a complete drone map file and builds the graph of zones.
-    
     Args:
         filepath (str): The path to the .txt map file.
-        
     Returns:
-        tuple[dict[str, Zone], int]: A tuple containing the dictionary of parsed zones 
-                                     and the total number of drones.
+        tuple[dict[str, Zone], int]: A tuple containing the dictionary of
+        parsed zones and the total number of drones.
     """
     zone_dict = {}
     nb_drones = 0
@@ -110,9 +109,9 @@ def parse_map_file(filepath: str) -> tuple[dict[str, Zone], int]:
             if not clean_line or clean_line.startswith("#"):
                 continue
             elif clean_line.startswith("nb_drones"):
-                #TODO maybe need a try - except
                 nb_drones = int(line.split(":", 1)[1].strip())
-            elif (clean_line.startswith("start_hub")
+            elif (
+                clean_line.startswith("start_hub")
                 or clean_line.startswith("end_hub")
                 or clean_line.startswith("hub")
             ):
@@ -120,5 +119,5 @@ def parse_map_file(filepath: str) -> tuple[dict[str, Zone], int]:
                 zone_dict[new_zone.name] = new_zone
             elif clean_line.startswith("connection"):
                 extract_connection(clean_line, zone_dict)
-                
+
     return zone_dict, nb_drones

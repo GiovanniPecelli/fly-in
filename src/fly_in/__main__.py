@@ -1,9 +1,8 @@
-from .pathfinder import plan_cooperative_path, cooperative_a_star
 from .print_move import print_move, get_max_turn
 from .graphics import graphic_visualization
+from .pathfinder import cooperative_a_star
 from .parser import parse_map_file
 from .drone import init_drones
-from .zone import ZoneType
 import time
 import sys
 
@@ -11,8 +10,8 @@ import sys
 def main(filepath: str) -> None:
     """
     Main entry point for the Fly-in simulation.
-    
-    Parses the map file, initializes drones, coordinates pathfinding 
+
+    Parses the map file, initializes drones, coordinates pathfinding
     using a global reservation table, and starts the graphical visualization.
 
     Args:
