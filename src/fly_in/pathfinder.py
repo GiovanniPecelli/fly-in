@@ -82,13 +82,26 @@ def plan_cooperative_path(
             # raise an err. if the parameters are not available
             # .get(..., "default_value") if ... not found -> def.val
             traffic_clear = True
+            link_capability = 1
+            for c in current_zone.connections:
+                if c.target != next_name:
+                    continue
+                else:
+                    link_capability = c.max_link_capacity
+            link = f"{current_name}-{next_name}"
             for t in range(current_turn + 1, next_turn + 1):
-                # read the reservation_table for the specific turn "t"
-                traffic = reservation_table.get(next_name, {}).get(t, 0)
-                if traffic >= next_zone.max_drones:
+                if (
+                    reservation_table.get(link, {}).get(t, 0)
+                    >= link_capability
+                ):
                     traffic_clear = False
                     break
-            # IF zone is full
+                if (
+                    reservation_table.get(next_name, {}).get(t, 0)
+                    >= next_zone.max_drones
+                ):
+                    traffic_clear = False
+                    break
             if not traffic_clear:
                 continue
 
@@ -149,8 +162,12 @@ def cooperative_a_star(
         if zone.zone_type == ZoneType.END:
             end_zone_name = zone.name
             break
-    # reservation_table is dict[zone_name: dict[turn: reservation]]
-    reservation_table: dict[str, dict[int, int]] = {}
+    # reservation_table is a dict[
+    #     zone_name | link_key: dict[turn: reservation
+    # ]
+    reservation_table: dict[
+        str, dict[int, int]
+        ] = {}
 
     for drone in drones_lst:
         path = plan_cooperative_path(
@@ -162,12 +179,22 @@ def cooperative_a_star(
         # path: (is a list[tuple[
         # ("start", turn), ("corridorA", turn), ("goal", turn)
         # ]])
-
         drone.path = path
         for zone_name, turn in path:
             if zone_name not in reservation_table:
                 reservation_table[zone_name] = {}
             if turn not in reservation_table[zone_name]:
                 reservation_table[zone_name][turn] = 0
-            # FILL -> reservation_table
+            # UPDATE -> reservation_table
             reservation_table[zone_name][turn] += 1
+        for i in range(len(path) - 1):
+            depar_name, depar_turn = path[i]
+            dest_name, dest_turn = path[i + 1]
+            if depar_name == dest_name:
+                continue
+            link_key = f"{depar_name}-{dest_name}"
+            for t in range(depar_turn + 1, dest_turn + 1):
+                reservation_table.setdefault(link_key, {})[t] = (
+                    reservation_table.get(link_key, {}).get(t, 0) + 1
+                )
+    print(reservation_table)

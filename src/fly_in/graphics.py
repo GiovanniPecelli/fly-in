@@ -18,7 +18,7 @@ def graphic_visualization(
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     width = screen.get_width()
     height = screen.get_height()
-    scale = 90
+    scale = 80
     min_x = min(zone.x for zone in zone_dict.values())
     min_y = min(zone.y for zone in zone_dict.values())
     max_x = max(zone.x for zone in zone_dict.values())
