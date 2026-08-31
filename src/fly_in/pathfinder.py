@@ -88,6 +88,7 @@ def plan_cooperative_path(
                 if traffic >= next_zone.max_drones:
                     traffic_clear = False
                     break
+            # IF zone is full
             if not traffic_clear:
                 continue
 
@@ -109,7 +110,7 @@ def plan_cooperative_path(
                     next_turn, next_penality, movement, next_name
                 ))
 
-                # TODO need study to fully understand it
+                # ADD intermediate_turn in come_from if is ZoneType.RESTRICTED
                 if turn_cost == 2:
                     intermediate_turn = current_turn + 1
                     came_from[(next_name, next_turn)] = (
@@ -121,6 +122,7 @@ def plan_cooperative_path(
                     came_from[(next_name, next_turn)] = (
                         current_name, current_turn)
 
+    # if the path for the drone have not end -> return []
     if current_name != end_name:
         return []
 
@@ -147,6 +149,7 @@ def cooperative_a_star(
         if zone.zone_type == ZoneType.END:
             end_zone_name = zone.name
             break
+    # reservation_table is dict[zone_name: dict[turn: reservation]]
     reservation_table: dict[str, dict[int, int]] = {}
 
     for drone in drones_lst:
@@ -166,4 +169,5 @@ def cooperative_a_star(
                 reservation_table[zone_name] = {}
             if turn not in reservation_table[zone_name]:
                 reservation_table[zone_name][turn] = 0
+            # FILL -> reservation_table
             reservation_table[zone_name][turn] += 1
