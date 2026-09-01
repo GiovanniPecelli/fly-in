@@ -17,12 +17,23 @@ def main(filepath: str) -> None:
     Args:
         filepath (str): The path to the map file.
     """
-    zone_dict, nb_drones = parse_map_file(filepath)
+    try:
+        zone_dict, nb_drones = parse_map_file(filepath)
+    except FileNotFoundError:
+        print(f"Error: file '{filepath}' not found.")
+        sys.exit(1)
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
     drones_lst = init_drones(zone_dict, nb_drones)
+
     cooperative_a_star(zone_dict, drones_lst)
+
     max_turn = get_max_turn(drones_lst) - 1
     print_move(zone_dict, drones_lst)
     print(f"\nTotal turn = {max_turn}")
+
     # time.sleep: Permits the see the drones movements output
     time.sleep(5)
     graphic_visualization(zone_dict, drones_lst)
@@ -31,7 +42,6 @@ def main(filepath: str) -> None:
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Error: Invalid number of arguments.")
-        print("The program accept only one argument")
         print(f"You provided {len(sys.argv) - 1} arguments.")
         sys.exit(1)
 
