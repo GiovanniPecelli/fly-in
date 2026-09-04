@@ -164,9 +164,8 @@ def cooperative_a_star(
         if zone.zone_type == ZoneType.END:
             end_zone_name = zone.name
             break
-    # reservation_table is a dict[
-    #     zone_name | link_key: dict[turn: reservation
-    # ]
+    # reservation_table have this struct
+    # dict[zone_name | link_key: dict[turn: reservation]
     reservation_table: dict[
         str, dict[int, int]
         ] = {}
