@@ -7,16 +7,20 @@ import time
 import sys
 
 
-def main(filepath: str) -> None:
+def main(args: list[str]) -> None:
     """
     Main entry point for the Fly-in simulation.
-
     Parses the map file, initializes drones, coordinates pathfinding
     using a global reservation table, and starts the graphical visualization.
-
     Args:
         filepath (str): The path to the map file.
     """
+    if len(args) != 2:
+        print("Error: Invalid number of arguments.")
+        print(f"You provided {len(args) - 1} arguments.")
+        sys.exit(1)
+    else:
+        filepath = args[1]
     try:
         zone_dict, nb_drones = parse_map_file(filepath)
     except FileNotFoundError:
@@ -40,9 +44,4 @@ def main(filepath: str) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Error: Invalid number of arguments.")
-        print(f"You provided {len(sys.argv) - 1} arguments.")
-        sys.exit(1)
-
-    main(sys.argv[1])
+    main(sys.argv)
