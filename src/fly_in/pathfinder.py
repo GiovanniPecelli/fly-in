@@ -48,12 +48,9 @@ def plan_cooperative_path(
         ] = {(start_name, 0): None}
 
     while len(queue) > 0:
-        (
-            current_turn,
-            current_penality,
-            movement,
-            current_name
-        ) = heapq.heappop(queue)
+        (current_turn, current_penality, movement,
+            # heappop() extract the element on the top of the tree
+            current_name) = heapq.heappop(queue)
         if current_name == end_name:
             break
         current_zone = zone_dict[current_name]
@@ -120,7 +117,7 @@ def plan_cooperative_path(
             # }
             # the real next option after the traffic and zone_type check
             if (next_name, next_turn) not in came_from:
-                # heappop() extract the element on the top of the tree
+                # heappush() push the element on the top of the tree
                 heapq.heappush(queue, (
                     next_turn, next_penality, movement, next_name
                 ))
@@ -142,6 +139,7 @@ def plan_cooperative_path(
         return []
 
     # state is the focus point (starting from the end)
+    # take the value extracted from the queue by heappop()
     state: tuple[str, int] | None = (current_name, current_turn)
 
     # add -> add state to the path list

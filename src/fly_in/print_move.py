@@ -51,7 +51,7 @@ def print_move(zone_dict: dict[str, Zone], drones_lst: list[Drone]) -> None:
     for t in range(1, max_turn + 1):
         moves_this_turn = []
         for drone in drones_lst:
-            # if turn > drone.path
+            # if turn/step > drone.path (t is the step/turn in the path)
             # The t loop have a len > then the len(first_drone.path)
             if t >= len(drone.path):
                 continue
